@@ -146,3 +146,11 @@
   # Valor padrão : False
   # Opções disponíveis: False ou True
   save_log_to_file: True
+
+  notification:
+    #LOG = Tudo que for exebido no LOG é enviado ao TELEGRAM
+    level: LOG
+    telegram:
+      #ID do Telegram BOT
+      chat_id:
+      token:
