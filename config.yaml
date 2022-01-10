@@ -148,7 +148,9 @@
   save_log_to_file: True
 
   notification:
-    #LOG = Tudo que for exebido no LOG é enviado ao TELEGRAM
+    #LOG = Tudo que for exebido no LOG é enviado na notificação
+    #SUMMARY = Envia apenas informações resumidas para notificação
+    #ALL = LOG + SUMMARY
     level: LOG
     telegram:
       #ID do Telegram BOT
