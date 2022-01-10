@@ -14,6 +14,13 @@ class TelegramNotification(object):
         def _process_command_screenshot(message):
             self.mainNotification.on_request_screenshot()
 
+        @self.bot.message_handler(commands=["start"])
+        def _process_command_start(message):
+            self.send_text("""Bot commands available:
+
+            /screenshot - Request screenshot.
+            """)
+
         thread = Thread(target = self.infinity_polling)
         thread.start()
 
