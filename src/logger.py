@@ -1,4 +1,5 @@
 from src.date import dateFormatted
+from src.notification import Notification
 
 import sys
 import yaml
@@ -6,7 +7,7 @@ import yaml
 
 stream = open("./config.yaml", 'r')
 c = yaml.safe_load(stream)
-
+notification = Notification.getInstance()
 last_log_is_progress = False
 
 COLOR = {
@@ -49,6 +50,7 @@ def logger(message, progress_indicator = False, color = 'default'):
         last_log_is_progress = False    
 
     print(formatted_message_colored)
+    notification.send_text(message)
 
     if (c['save_log_to_file'] == True):
         logger_file = open("./logs/logger.log", "a", encoding='utf-8')

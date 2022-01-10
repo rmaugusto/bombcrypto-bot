@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-    
+from mss import screenshot
 from src.logger import logger, loggerMapClicked
+from src.notification import Notification
 from cv2 import cv2
 from os import listdir
 from random import randint
@@ -18,6 +20,7 @@ ct = c['threshold']
 ch = c['home']
 pause = c['time_intervals']['interval_between_moviments']
 pyautogui.PAUSE = pause
+notification = Notification.getInstance()
 
 cat = """
                                                 _
@@ -177,6 +180,15 @@ def printSreen():
 
         # Grab the data
         return sct_img[:,:,:3]
+
+def printScreenToFile():
+    with mss.mss() as sct:
+        monitor = sct.monitors[0]
+        grab = sct.grab(monitor)
+        # Generate temporary file name
+        output = "/tmp/bombcrypto.png"
+        mss.tools.to_png(grab.rgb, grab.size, output=output)
+        return output
 
 def positions(target, threshold=ct['default'],img = None):
     if img is None:
@@ -461,6 +473,7 @@ def main():
     hero_clicks = 0
     login_attempts = 0
     last_log_is_progress = False
+    notification.screenshot_callback = printScreenToFile
 
     global images
     images = load_images()
