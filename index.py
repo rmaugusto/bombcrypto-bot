@@ -564,7 +564,7 @@ def main():
             last["refresh_heroes"] = now
             refreshHeroesPositions()
 
-        if now - last["check_for_balance"] > t['check_for_balance']:
+        if now - last["check_for_balance"] > addRandomness(t['check_for_balance'] * 60):
             last["check_for_balance"] = now
             checkForBalance()            
 
