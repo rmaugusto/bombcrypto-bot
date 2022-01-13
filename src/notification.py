@@ -62,7 +62,7 @@ class Notification(object):
         stream = open("config.yaml", 'r')
         c = yaml.safe_load(stream)
 
-        if c.get('notification', {}).get('telegram', {}).get('token', '') != '':
+        if c.get('notification', {}).get('telegram', {}).get('token', '') not in ['', None]:
             self.telegram_notification = TelegramNotification(self, c['notification']['telegram']['token'], c['notification']['telegram']['chat_id'])
             self.level = c['notification']['level']
             self.initialized = True             
