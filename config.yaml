@@ -33,6 +33,13 @@
     # Valor padrão (em minutos): 1
     check_for_captcha: 1
 
+    # [en_US] Time interval to check for captcha.
+    # Default value (in minutes): 1
+    #
+    # [pt_BR] Intervalo de tempo para verificar se precisa resolver o captcha.
+    # Valor padrão (em minutos): 1
+    check_for_balance: 1    
+
     # [en_US] Time interval to check for login request
     # Default value (in minutes): 3
     #
@@ -86,6 +93,13 @@
     # [pt_BR]
     # Valor padrão: 0.9
     green_bar: 0.9
+
+    # [en_US]
+    # Default value: 0.8
+    #
+    # [pt_BR]
+    # Valor padrão: 0.8
+    bcoin_icon: 0.8
 
   home:
     enable: False
@@ -147,12 +161,12 @@
   # Opções disponíveis: False ou True
   save_log_to_file: True
 
-  notification:
-    #LOG = Tudo que for exebido no LOG é enviado na notificação
-    #SUMMARY = Envia apenas informações resumidas para notificação
-    #ALL = LOG + SUMMARY
-    level: LOG
-    telegram:
-      #ID do Telegram BOT
-      chat_id:
-      token:
+  # notification:
+  #   #LOG = Tudo que for exebido no LOG é enviado na notificação
+  #   #SUMMARY = Envia apenas informações resumidas para notificação
+  #   #ALL = LOG + SUMMARY
+  #   level: LOG
+  #   telegram:
+  #     #ID do Telegram BOT
+  #     chat_id: -641916208
+  #     token: 5037527490:AAGHoLRrVE06xRDvBsmWphZxeDophHnHFh4

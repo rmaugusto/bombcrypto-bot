@@ -12,6 +12,8 @@ import pyautogui
 import time
 import sys
 import yaml
+import pytesseract
+import re
 
 # Load config file.
 stream = open("config.yaml", 'r')
@@ -171,28 +173,33 @@ def clickBtn(img, timeout=3, threshold = ct['default']):
 
     return False
 
-def printSreen():
+def printSreen(regionMonitor=None):
     with mss.mss() as sct:
         monitor = sct.monitors[0]
-        sct_img = np.array(sct.grab(monitor))
+
+        if regionMonitor is not None:
+            monitor = regionMonitor
+
+        grab = sct.grab(monitor)
+        sct_img = np.array(grab)
         # The screen part to capture
         # monitor = {"top": 160, "left": 160, "width": 1000, "height": 135}
 
         # Grab the data
-        return sct_img[:,:,:3]
+        return sct_img[:,:,:3],grab
 
-def printScreenToFile():
-    with mss.mss() as sct:
-        monitor = sct.monitors[0]
-        grab = sct.grab(monitor)
-        # Generate temporary file name
-        output = "/tmp/bombcrypto.png"
-        mss.tools.to_png(grab.rgb, grab.size, output=output)
-        return output
+def printScreenToFile(regionMonitor=None, file_name=None):
+    _,grab = printSreen(regionMonitor)
+    
+    if file_name is None:
+        file_name = "/tmp/bombcrypto.png"
+
+    mss.tools.to_png(grab.rgb, grab.size, output=file_name)
+    return file_name, grab
 
 def positions(target, threshold=ct['default'],img = None):
     if img is None:
-        img = printSreen()
+        img,_ = printSreen()
     result = cv2.matchTemplate(img,target,cv2.TM_CCOEFF_NORMED)
     w = target.shape[1]
     h = target.shape[0]
@@ -463,6 +470,36 @@ def refreshHeroes():
     logger('💪 {} heroes sent to work'.format(hero_clicks))
     goToGame()
 
+def checkForBalance():
+    logger('💰 Checking balance in chest')
+    clickBtn(images['chest'])
+
+    bcoinIcon = positions(images['bcoin-icon'], threshold = ct['bcoin_icon'])
+    if (len(bcoinIcon) == 0):
+        return
+
+    time.sleep(1)
+
+    x,y,w,h = bcoinIcon[len(bcoinIcon)-1]
+    monitor = {"top": y+120, "left": x-40, "width": w+80, "height": h-70}
+    _, grab = printSreen(monitor)
+
+    im = np.array(grab, dtype=np.uint8)
+    im = np.flip(im[:, :, :3], 2)  # BGRA -> RGB conversion    
+
+    result = pytesseract.image_to_string(im, lang='eng', config='--psm 10 --oem 3')
+    current_balance = float(re.sub(r'[^\d.]', '', result))
+
+    clickBtn(images['x'])
+
+    logger('💰 Current balance to claim is $ {}'.format(current_balance))
+
+    global last_balance
+    if last_balance is None:
+        last_balance = current_balance
+    
+    logger('💰 Profit since last check is $ {}'.format(current_balance - last_balance))
+
 
 def main():
     """Main execution setup and loop"""
@@ -470,6 +507,8 @@ def main():
     global hero_clicks
     global login_attempts
     global last_log_is_progress
+    global last_balance
+    last_balance = None
     hero_clicks = 0
     login_attempts = 0
     last_log_is_progress = False
@@ -494,7 +533,8 @@ def main():
     "heroes" : 0,
     "new_map" : 0,
     "check_for_captcha" : 0,
-    "refresh_heroes" : 0
+    "refresh_heroes" : 0,
+    "check_for_balance" : 0,
     }
     # =========
 
@@ -516,13 +556,17 @@ def main():
         if now - last["new_map"] > t['check_for_new_map_button']:
             last["new_map"] = now
 
+
             if clickBtn(images['new-map']):
                 loggerMapClicked()
-
 
         if now - last["refresh_heroes"] > addRandomness( t['refresh_heroes_positions'] * 60):
             last["refresh_heroes"] = now
             refreshHeroesPositions()
+
+        if now - last["check_for_balance"] > t['check_for_balance']:
+            last["check_for_balance"] = now
+            checkForBalance()            
 
         #clickBtn(teasureHunt)
         logger(None, progress_indicator=True)
