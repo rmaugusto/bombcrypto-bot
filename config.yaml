@@ -33,12 +33,12 @@
     # Valor padrão (em minutos): 1
     check_for_captcha: 1
 
-    # [en_US] Time interval to check for captcha.
-    # Default value (in minutes): 1
+    # [en_US] Time interval to check blance.
+    # Default value (in minutes): 3
     #
-    # [pt_BR] Intervalo de tempo para verificar se precisa resolver o captcha.
-    # Valor padrão (em minutos): 1
-    check_for_balance: 1    
+    # [pt_BR] Intervalo de tempo para verificar o saldo.
+    # Valor padrão (em minutos): 3
+    check_for_balance: 3
 
     # [en_US] Time interval to check for login request
     # Default value (in minutes): 3
