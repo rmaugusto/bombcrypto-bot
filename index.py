@@ -482,13 +482,19 @@ def checkForBalance():
 
     x,y,w,h = bcoinIcon[len(bcoinIcon)-1]
     monitor = {"top": y+120, "left": x-40, "width": w+80, "height": h-70}
-    _, grab = printSreen(monitor)
+    # _, grab = printSreen(monitor)
+    _, grab = printScreenToFile(monitor)
+
 
     im = np.array(grab, dtype=np.uint8)
     im = np.flip(im[:, :, :3], 2)  # BGRA -> RGB conversion    
 
-    result = pytesseract.image_to_string(im, lang='eng', config='--psm 10 --oem 3')
-    current_balance = float(re.sub(r'[^\d.]', '', result))
+    try:
+        result = pytesseract.image_to_string(im, lang='eng', config='--oem 3 --psm 6')
+        current_balance = float(re.sub(r'[^\d.]', '', result))
+    except:
+        current_balance = 0
+        logger('💰 Cannot read balance in chest, OCR error. Showing 0')
 
     clickBtn(images['x'])
 
@@ -541,6 +547,10 @@ def main():
     while True:
         now = time.time()
 
+        if now - last["check_for_balance"] > addRandomness(t['check_for_balance'] * 60):
+            last["check_for_balance"] = now
+            checkForBalance()            
+
         if now - last["check_for_captcha"] > addRandomness(t['check_for_captcha'] * 60):
             last["check_for_captcha"] = now
 
@@ -564,9 +574,6 @@ def main():
             last["refresh_heroes"] = now
             refreshHeroesPositions()
 
-        if now - last["check_for_balance"] > addRandomness(t['check_for_balance'] * 60):
-            last["check_for_balance"] = now
-            checkForBalance()            
 
         #clickBtn(teasureHunt)
         logger(None, progress_indicator=True)
