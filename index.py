@@ -14,6 +14,7 @@ import sys
 import yaml
 import pytesseract
 import re
+import datetime
 
 # Load config file.
 stream = open("config.yaml", 'r')
@@ -470,8 +471,25 @@ def refreshHeroes():
     logger('💪 {} heroes sent to work'.format(hero_clicks))
     goToGame()
 
+def saveBalance():
+    if not c['save_balance']:
+        return
+
+    logger('💰 Saving balance')
+
+    with open(c['balance_path'], 'a') as f:
+        global current_balance
+        current_date_time_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        f.write('{},{}\n'.format(current_date_time_str, current_balance))
+
+    logger('💰 Balance saved')
+
+
 def checkForBalance():
     logger('💰 Checking balance in chest')
+
+    clickBtn(images['x'])
+    
     clickBtn(images['chest'])
 
     bcoinIcon = positions(images['bcoin-icon'], threshold = ct['bcoin_icon'])
@@ -489,23 +507,32 @@ def checkForBalance():
     im = np.array(grab, dtype=np.uint8)
     im = np.flip(im[:, :, :3], 2)  # BGRA -> RGB conversion    
 
+    global current_balance
+    new_balance = None
+
     try:
         result = pytesseract.image_to_string(im, lang='eng', config='--oem 3 --psm 6')
-        current_balance = float(re.sub(r'[^\d.]', '', result))
-    except:
-        current_balance = 0
-        logger('💰 Cannot read balance in chest, OCR error. Showing 0')
+        new_balance = float(re.sub(r'[^\d.]', '', result))
+
+        if new_balance is not None:
+            if current_balance is None:
+                current_balance = new_balance
+
+            if current_balance != new_balance:
+                logger('💰💰💰 New balance, your profit is {} 💰💰'.format(new_balance - current_balance))
+                current_balance = new_balance
+                saveBalance()
+
+        else:
+            logger('💰 Cannot read balance in chest, OCR error.')
+
+    except Exception as e:
+        new_balance = None
+        logger('💰 Cannot read balance in chest, OCR error.')
 
     clickBtn(images['x'])
 
     logger('💰 Current balance to claim is $ {}'.format(current_balance))
-
-    global last_balance
-    if last_balance is None:
-        last_balance = current_balance
-    
-    logger('💰 Profit since last check is $ {}'.format(current_balance - last_balance))
-
 
 def main():
     """Main execution setup and loop"""
@@ -513,8 +540,8 @@ def main():
     global hero_clicks
     global login_attempts
     global last_log_is_progress
-    global last_balance
-    last_balance = None
+    global current_balance
+    current_balance = None
     hero_clicks = 0
     login_attempts = 0
     last_log_is_progress = False
@@ -566,14 +593,12 @@ def main():
         if now - last["new_map"] > t['check_for_new_map_button']:
             last["new_map"] = now
 
-
-            if clickBtn(images['new-map']):
-                loggerMapClicked()
+        if clickBtn(images['new-map']):
+            loggerMapClicked()
 
         if now - last["refresh_heroes"] > addRandomness( t['refresh_heroes_positions'] * 60):
             last["refresh_heroes"] = now
             refreshHeroesPositions()
-
 
         #clickBtn(teasureHunt)
         logger(None, progress_indicator=True)

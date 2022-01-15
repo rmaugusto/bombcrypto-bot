@@ -1,3 +1,4 @@
+import logging
 import yaml
 import telebot
 from threading import Thread
@@ -25,7 +26,7 @@ class TelegramNotification(object):
         thread.start()
 
     def infinity_polling(self):
-        self.bot.infinity_polling()
+        self.bot.infinity_polling(logger_level=logging.FATAL)
 
     def send_photo(self, photo_file_path):
         photo = open(photo_file_path, 'rb')
@@ -36,7 +37,7 @@ class TelegramNotification(object):
         try:
             self.bot.send_message(self.chat_id, message)
         except Exception as e:
-            print(e)
+            print('Error sending message: ' + str(e))
 
 class Notification(object):
     __instance = None
