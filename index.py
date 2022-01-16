@@ -3,7 +3,7 @@ from mss import screenshot
 from src.logger import logger, loggerMapClicked
 from src.notification import Notification
 from cv2 import cv2
-from os import listdir
+from os import listdir, path
 from random import randint
 from random import random
 import numpy as np
@@ -471,6 +471,20 @@ def refreshHeroes():
     logger('💪 {} heroes sent to work'.format(hero_clicks))
     goToGame()
 
+def getLastBalanceSaved():
+    if not c['save_balance']:
+        return None
+
+    if path.exists(c['balance_path']):
+        with open(c['balance_path'], 'r') as f:
+            lines = f.readlines()
+            if lines and len(lines) > 0:
+                last_line = lines[-1]
+                last_balance = last_line.split(',')[1]
+                return float(last_balance)
+
+    return None
+
 def saveBalance():
     if not c['save_balance']:
         return
@@ -508,17 +522,21 @@ def checkForBalance():
     im = np.flip(im[:, :, :3], 2)  # BGRA -> RGB conversion    
 
     global current_balance
+    global last_balance_saved
+
     new_balance = None
 
     try:
         result = pytesseract.image_to_string(im, lang='eng', config='--oem 3 --psm 6')
         new_balance = float(re.sub(r'[^\d.]', '', result))
 
+        last_balance_saved = getLastBalanceSaved()
+
         if new_balance is not None:
             if current_balance is None:
                 current_balance = new_balance
 
-            if current_balance != new_balance:
+            if current_balance != new_balance or last_balance_saved is None or last_balance_saved != new_balance:
                 logger('💰💰💰 New balance, your profit is {} 💰💰'.format(new_balance - current_balance))
                 current_balance = new_balance
                 saveBalance()
@@ -541,6 +559,8 @@ def main():
     global login_attempts
     global last_log_is_progress
     global current_balance
+    global last_balance_saved
+    last_balance_saved = None
     current_balance = None
     hero_clicks = 0
     login_attempts = 0
