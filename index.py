@@ -594,10 +594,6 @@ def main():
     while True:
         now = time.time()
 
-        if now - last["check_for_balance"] > addRandomness(t['check_for_balance'] * 60):
-            last["check_for_balance"] = now
-            checkForBalance()            
-
         if now - last["check_for_captcha"] > addRandomness(t['check_for_captcha'] * 60):
             last["check_for_captcha"] = now
 
@@ -609,6 +605,10 @@ def main():
             sys.stdout.flush()
             last["login"] = now
             login()
+
+        if now - last["check_for_balance"] > addRandomness(t['check_for_balance'] * 60):
+            last["check_for_balance"] = now
+            checkForBalance()            
 
         if now - last["new_map"] > t['check_for_new_map_button']:
             last["new_map"] = now
