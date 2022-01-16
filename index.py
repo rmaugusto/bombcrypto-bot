@@ -508,6 +508,7 @@ def checkForBalance():
 
     bcoinIcon = positions(images['bcoin-icon'], threshold = ct['bcoin_icon'])
     if (len(bcoinIcon) == 0):
+        clickBtn(images['x'])
         return
 
     time.sleep(1)
@@ -542,11 +543,11 @@ def checkForBalance():
                 saveBalance()
 
         else:
-            logger('💰 Cannot read balance in chest, OCR error.')
+            logger('💰 Cannot read balance in chest, OCR error. New balance is none')
 
     except Exception as e:
         new_balance = None
-        logger('💰 Cannot read balance in chest, OCR error.')
+        logger('💰 Cannot read balance in chest, OCR error. ' + str(e))
 
     clickBtn(images['x'])
 
